@@ -18,3 +18,4 @@ class MoldPanel(bpy.types.Panel):
         column2.operator("drmold.addvclamp", text="Add vertical clamp")
         column2.operator("drmold.addhclamp", text="Add horizontal clamp")
         column2.operator("drmold.addpin", text="Add pin")
+        column2.operator("drmold.addfunnel", text="Add funnel")

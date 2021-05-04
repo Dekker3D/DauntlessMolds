@@ -5,6 +5,7 @@ import threading
 import bmesh
 from bmesh.types import BMVert
 import mathutils
+import math
 from pathlib import Path
 
 class DRMoldCleanupOperator(bpy.types.Operator):
@@ -79,6 +80,32 @@ class DRAddPinOperator(bpy.types.Operator):
         DRMoldHelper.moveToCollection(cube, DRMoldHelper.getColCutouts())
 
         return {'FINISHED'}
+
+class DRAddFunnelOperator(bpy.types.Operator):
+    bl_idname = "drmold.addfunnel"
+    bl_label = "DRMold: Add funnel"
+    bl_description = "DRMold: Add funnel"
+
+    collection = None
+
+    def execute(self, context):
+        cone = DRMoldHelper.makeCone(60, 60)
+        cone.rotation_euler = (math.radians(180), 0, 0)
+        DRMoldHelper.moveToCollection(cone, DRMoldHelper.getColShellAdditions())
+        v = DRMoldHelper.getHighestVertex(bpy.context.active_object)
+        v[2] += 30-20
+        cone.location = v
+
+        cone = DRMoldHelper.makeCone(90, 120)
+        cone.rotation_euler = (math.radians(180), 0, 0)
+        DRMoldHelper.moveToCollection(cone, DRMoldHelper.getColGloveAdditions())
+        v = DRMoldHelper.getHighestVertex(bpy.context.active_object)
+        v[2] += 60-20
+        cone.location = v
+
+        return {'FINISHED'}
+    
+
 
 class DRMoldHelper():
     @classmethod
@@ -375,6 +402,24 @@ class DRMoldHelper():
         bm.to_mesh(mesh)
 
     @classmethod
+    def getHighestVertex(cls, obj):
+        mesh = obj.data
+        bm = bmesh.new()
+        bm.from_mesh(mesh)
+        
+        bm.verts.ensure_lookup_table()
+        highestVert = None
+        highestZ = 0
+        for v in bm.verts:
+            if v.co[2] > highestZ:
+                highestZ = v.co[2]
+                highestVert = v.co
+        
+        if(not highestVert):
+            return None
+        return mathutils.Vector(highestVert)
+
+    @classmethod
     def selectObject(cls, obj):
         bpy.ops.object.select_all(action='DESELECT')
         bpy.context.view_layer.objects.active = obj
@@ -459,11 +504,20 @@ class DRMoldHelper():
         cls.booleanWith(obj, obj2, 1)
         cls.deleteObject(obj2)
         return obj
+
+    @classmethod
+    def makeCone(cls, radius, height):
+        sel = bpy.context.active_object
+        bpy.ops.mesh.primitive_cone_add(location=(0,0,0), radius1=radius, radius2=0, depth=height)
+        cone = bpy.context.active_object
+        cls.selectObject(sel)
+        return cone
     
     @classmethod
     def makeCube(cls, x, y, z):
         sel = bpy.context.active_object
         bpy.ops.mesh.primitive_cube_add(location=(0,0,0), size=1, scale=(x*2, y*2, z*2))
+        bpy.ops.object.transform_apply(location = False, scale = True, rotation = False)
         cube = bpy.context.active_object
         cls.selectObject(sel)
         return cube
