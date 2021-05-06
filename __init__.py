@@ -28,7 +28,8 @@ from . operator import DRAddVClampOperator
 from . operator import DRAddHClampOperator
 from . operator import DRAddPinOperator
 from . operator import DRAddFunnelOperator
-from . moldPanel import MoldPanel
+from . moldPanel import DRMoldPanel
+from . moldPanel import DRDonatePanel
 from bpy.utils import register_class, unregister_class
 from bpy.types import AddonPreferences
 from bpy.props import StringProperty
@@ -45,7 +46,7 @@ class DMPreferences(AddonPreferences):
         layout.label(text="Dauntless Molds preferences")
         layout.prop(self, "filepath")
 
-_classes = (DRMoldCleanupOperator, DRMoldOperator, DRAddVClampOperator, DRAddHClampOperator, DRAddPinOperator, DRAddFunnelOperator, MoldPanel, DMPreferences)
+_classes = (DRMoldCleanupOperator, DRMoldOperator, DRAddVClampOperator, DRAddHClampOperator, DRAddPinOperator, DRAddFunnelOperator, DRMoldPanel, DRDonatePanel, DMPreferences)
 
 def register():
     for _class in _classes:
