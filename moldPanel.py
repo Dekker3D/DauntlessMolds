@@ -18,15 +18,17 @@ class DRMoldPanel(DRPanel):
     def draw(self, context):
         layout = self.layout
 
-        row = layout.row()
-        column1 = row.column()
-        column1.operator("drmold.cleanup", text="Clean up")
-        column1.operator("drmold.doall", text="Do all steps")
-        column2 = row.column()
-        column2.operator("drmold.addvclamp", text="Add vertical clamp")
-        column2.operator("drmold.addhclamp", text="Add horizontal clamp")
-        column2.operator("drmold.addpin", text="Add pin")
-        column2.operator("drmold.addfunnel", text="Add funnel")
+        box = layout.box()
+        box.label(text="Building the mold")
+        box.operator("drmold.cleanup", text="Clean up")
+        box.operator("drmold.addfunnel", text="Add funnel")
+        box.operator("drmold.doall", text="Do all steps")
+        
+        box = layout.box()
+        box.label(text="Adding clamps and pins")
+        box.operator("drmold.addvclamp", text="Add vertical clamp")
+        box.operator("drmold.addhclamp", text="Add horizontal clamp")
+        box.operator("drmold.addpin", text="Add pin")
 
 class DRDonatePanel(DRPanel):
     bl_idname = "DR_Molds_PT_DonatePanel"
