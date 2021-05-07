@@ -12,11 +12,24 @@ class DRPanel(bpy.types.Panel):
         return obj is not None and obj.type == 'MESH' and obj.mode in {'OBJECT'}
 
 class DRMoldPanel(DRPanel):
-    bl_idname = "DR_Molds_PT_MoldPanel"
+    bl_idname = "DR_MOLDS_PT_MoldPanel"
     bl_label = "Dauntless Molds"
 
     def draw(self, context):
         layout = self.layout
+
+        props = context.scene.dr_molds
+
+        box = layout.box()
+        box.label(text="Settings")
+        box.prop(props, "remesh_resolution")
+        box.prop(props, "symmetry_mode")
+        box.prop(props, "glove_thickness")
+        box.prop(props, "glove_rim_height")
+        box.prop(props, "glove_rim_width")
+        box.prop(props, "shell_thickness")
+        box.prop(props, "shell_rim_height")
+        box.prop(props, "shell_rim_width")
 
         box = layout.box()
         box.label(text="Building the mold")
@@ -31,7 +44,7 @@ class DRMoldPanel(DRPanel):
         box.operator("drmold.addpin", text="Add pin")
 
 class DRDonatePanel(DRPanel):
-    bl_idname = "DR_Molds_PT_DonatePanel"
+    bl_idname = "DR_MOLDS_PT_DonatePanel"
     bl_label = "Donate"
 
     def draw(self, context):

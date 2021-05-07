@@ -30,9 +30,10 @@ from . operator import DRAddPinOperator
 from . operator import DRAddFunnelOperator
 from . moldPanel import DRMoldPanel
 from . moldPanel import DRDonatePanel
+import bpy
 from bpy.utils import register_class, unregister_class
-from bpy.types import AddonPreferences
-from bpy.props import StringProperty
+from bpy.types import AddonPreferences, PropertyGroup
+from bpy.props import StringProperty, FloatProperty, PointerProperty, BoolProperty
 
 class DMPreferences(AddonPreferences):
     bl_idname = __name__
@@ -46,13 +47,69 @@ class DMPreferences(AddonPreferences):
         layout.label(text="Dauntless Molds preferences")
         layout.prop(self, "filepath")
 
-_classes = (DRMoldCleanupOperator, DRMoldOperator, DRAddVClampOperator, DRAddHClampOperator, DRAddPinOperator, DRAddFunnelOperator, DRMoldPanel, DRDonatePanel, DMPreferences)
+class DMSceneProps(PropertyGroup):
+    symmetry_mode: BoolProperty(
+        name="Symmetry Mode",
+        description="Use symmetry when making molds",
+        default=True
+    )
+    
+    remesh_resolution: FloatProperty(
+        name="Remesh Resolution",
+        description="The resolution of the remesh operations",
+        min=0,
+        default=2 # 2mm
+    )
+
+    glove_thickness: FloatProperty(
+        name="Glove Mold Thickness",
+        description="The thickness of the glove mold",
+        min=0,
+        default=3 # 3mm
+    )
+    glove_rim_height: FloatProperty(
+        name="Glove Rim Height",
+        description="The height of the glove mold's rim",
+        min=0,
+        default=6 # 6mm
+    )
+    glove_rim_width: FloatProperty(
+        name="Glove Rim Width",
+        description="The width of the glove mold's rim",
+        min=0,
+        default=6 # 6mm
+    )
+    shell_thickness: FloatProperty(
+        name="Shell Thickness",
+        description="The thickness of the mold shell, over the glove mold's rim",
+        min=0,
+        default=4 # 4mm
+    )
+    shell_rim_height: FloatProperty(
+        name="Shell Rim Height",
+        description="The height of the mold shell's rim",
+        min=0,
+        default=10 # 10mm
+    )
+    shell_rim_width: FloatProperty(
+        name="Shell Rim Width",
+        description="The width of the mold shell's rim",
+        min=0,
+        default=10 # 10mm
+    )
+
+_classes = (DMSceneProps, DRMoldCleanupOperator, DRMoldOperator, DRAddVClampOperator, DRAddHClampOperator, DRAddPinOperator, DRAddFunnelOperator,
+            DRMoldPanel, DRDonatePanel, DMPreferences)
 
 def register():
     for _class in _classes:
         register_class(_class)
+    
+    bpy.types.Scene.dr_molds = PointerProperty(type=DMSceneProps)
 
 def unregister():
+    del bpy.types.Scene.dr_molds
+    
     for _class in _classes:
         unregister_class(_class)
 
