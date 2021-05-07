@@ -22,6 +22,7 @@ class DRMoldPanel(DRPanel):
 
         box = layout.box()
         box.label(text="Settings")
+        box.operator("drmold.set_units", text="Set Units To MM Scale")
         box.prop(props, "remesh_resolution")
         box.prop(props, "symmetry_mode")
         box.prop(props, "glove_thickness")

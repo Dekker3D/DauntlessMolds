@@ -8,6 +8,18 @@ import mathutils
 import math
 from pathlib import Path
 
+class DRMoldUnitOperator(bpy.types.Operator):
+    bl_idname = "drmold.set_units"
+    bl_label = "DRMold: Set Units To MM Scale"
+    bl_description = "DRMold: Set the unit system so that 1 unit is 1 mm."
+
+    def execute(self, context):
+        bpy.context.scene.unit_settings.system="METRIC"
+        bpy.context.scene.unit_settings.length_unit="MILLIMETERS"
+        bpy.context.scene.unit_settings.scale_length=0.001
+
+        return {'FINISHED'}
+
 class DRMoldCleanupOperator(bpy.types.Operator):
     bl_idname = "drmold.cleanup"
     bl_label = "DRMold: Cleanup"

@@ -22,6 +22,7 @@ bl_info = {
     "category" : "Mesh"
 }
 
+from . operator import DRMoldUnitOperator
 from . operator import DRMoldCleanupOperator
 from . operator import DRMoldOperator
 from . operator import DRAddVClampOperator
@@ -57,6 +58,7 @@ class DMSceneProps(PropertyGroup):
     remesh_resolution: FloatProperty(
         name="Remesh Resolution",
         description="The resolution of the remesh operations",
+        subtype='DISTANCE',
         min=0,
         default=2 # 2mm
     )
@@ -64,41 +66,47 @@ class DMSceneProps(PropertyGroup):
     glove_thickness: FloatProperty(
         name="Glove Mold Thickness",
         description="The thickness of the glove mold",
+        subtype='DISTANCE',
         min=0,
         default=3 # 3mm
     )
     glove_rim_height: FloatProperty(
         name="Glove Rim Height",
         description="The height of the glove mold's rim",
+        subtype='DISTANCE',
         min=0,
         default=6 # 6mm
     )
     glove_rim_width: FloatProperty(
         name="Glove Rim Width",
         description="The width of the glove mold's rim",
+        subtype='DISTANCE',
         min=0,
         default=6 # 6mm
     )
     shell_thickness: FloatProperty(
         name="Shell Thickness",
         description="The thickness of the mold shell, over the glove mold's rim",
+        subtype='DISTANCE',
         min=0,
         default=4 # 4mm
     )
     shell_rim_height: FloatProperty(
         name="Shell Rim Height",
         description="The height of the mold shell's rim",
+        subtype='DISTANCE',
         min=0,
         default=10 # 10mm
     )
     shell_rim_width: FloatProperty(
         name="Shell Rim Width",
         description="The width of the mold shell's rim",
+        subtype='DISTANCE',
         min=0,
         default=10 # 10mm
     )
 
-_classes = (DMSceneProps, DRMoldCleanupOperator, DRMoldOperator, DRAddVClampOperator, DRAddHClampOperator, DRAddPinOperator, DRAddFunnelOperator,
+_classes = (DRMoldUnitOperator, DMSceneProps, DRMoldCleanupOperator, DRMoldOperator, DRAddVClampOperator, DRAddHClampOperator, DRAddPinOperator, DRAddFunnelOperator,
             DRMoldPanel, DRDonatePanel, DMPreferences)
 
 def register():
