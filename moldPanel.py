@@ -23,8 +23,8 @@ class DRMoldPanel(DRPanel):
         box = layout.box()
         box.label(text="Settings")
         box.operator("drmold.set_units", text="Set Units To MM Scale")
-        box.prop(props, "remesh_resolution")
-        box.prop(props, "symmetry_mode")
+        #box.prop(props, "remesh_resolution")
+        #box.prop(props, "symmetry_mode")
         box.prop(props, "glove_thickness")
         box.prop(props, "glove_rim_height")
         box.prop(props, "glove_rim_width")
@@ -54,4 +54,7 @@ class DRDonatePanel(DRPanel):
         layout.label(text="If you haven't already,")
         layout.label(text="Consider donating to the")
         layout.label(text="developer of this add-on!")
+        layout.operator("wm.url_open", text="Paypal.me").url="https://www.paypal.com/paypalme/DauntlessRooster"
+        layout.operator("wm.url_open", text="Ko-fi (offers credit card donations)").url="https://ko-fi.com/dauntlessrooster"
+        layout.operator("wm.url_open", text="GitHub link").url="https://github.com/Dekker3D/DauntlessMolds"
 
