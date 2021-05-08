@@ -34,7 +34,7 @@ from . moldPanel import DRDonatePanel
 import bpy
 from bpy.utils import register_class, unregister_class
 from bpy.types import AddonPreferences, PropertyGroup
-from bpy.props import StringProperty, FloatProperty, PointerProperty, BoolProperty
+from bpy.props import StringProperty, FloatProperty, PointerProperty, BoolProperty, CollectionProperty
 
 class DMPreferences(AddonPreferences):
     bl_idname = __name__
@@ -47,6 +47,18 @@ class DMPreferences(AddonPreferences):
         layout = self.layout
         layout.label(text="Dauntless Molds preferences")
         layout.prop(self, "filepath")
+
+class DMStepListItem(PropertyGroup):
+    name: StringProperty(
+        name="Name",
+        description="A name for this item",
+        default="Untitled"
+    )
+    ref: PointerProperty(
+        name="Object",
+        description="Object to store",
+        type=bpy.types.Object
+    )
 
 class DMSceneProps(PropertyGroup):
     symmetry_mode: BoolProperty(
@@ -106,7 +118,60 @@ class DMSceneProps(PropertyGroup):
         default=10 # 10mm
     )
 
-_classes = (DRMoldUnitOperator, DMSceneProps, DRMoldCleanupOperator, DRMoldOperator, DRAddVClampOperator, DRAddHClampOperator, DRAddPinOperator, DRAddFunnelOperator,
+    mold_draft_angle: PointerProperty(
+        name="Draft Angle Mesh",
+        description="Mesh with any gaps filled in",
+        type=bpy.types.Object
+    )
+    mold_glove_surface: PointerProperty(
+        name="Glove Mold Surface Mesh",
+        description="Mesh for glove mold surface",
+        type=bpy.types.Object
+    )
+    mold_glove_inflated: PointerProperty(
+        name="Glove Mold Inflated Mesh",
+        description="Inflated mesh for glove mold rim",
+        type=bpy.types.Object
+    )
+    mold_glove_complete: PointerProperty(
+        name="Glove Mold Completed Mesh",
+        description="Finished glove mold cutout mesh",
+        type=bpy.types.Object
+    )
+
+    mold_shell_base: PointerProperty(
+        name="Mold Shell Base Shape",
+        description="Mold shell base shape",
+        type=bpy.types.Object
+    )
+    mold_shell_organic: PointerProperty(
+        name="Mold Shell Inflated Shape",
+        description="Mold shell, inflated",
+        type=bpy.types.Object
+    )
+    mold_shell_finished: PointerProperty(
+        name="Mold Shell Finished Shape",
+        description="Mold shell, mostly finished",
+        type=bpy.types.Object
+    )
+    mold_shell_cut: PointerProperty(
+        name="Mold Shell Cut Shape",
+        description="Mold shell shape, cut to size",
+        type=bpy.types.Object
+    )
+    mold_shell_half: CollectionProperty(
+        name="Mold Shell Half",
+        description="Mold shell half",
+        type=DMStepListItem
+    )
+    mold_base_shape: PointerProperty(
+        name="Mold Base Shape",
+        description="Middle part of the mold",
+        type=bpy.types.Object
+    )
+
+_classes = (DRMoldUnitOperator, DMStepListItem, DMSceneProps,
+            DRMoldCleanupOperator, DRMoldOperator, DRAddVClampOperator, DRAddHClampOperator, DRAddPinOperator, DRAddFunnelOperator,
             DRMoldPanel, DRDonatePanel, DMPreferences)
 
 def register():

@@ -126,7 +126,8 @@ class DRMoldHelper():
 
     @classmethod
     def getDraftAngledModel(cls, context, obj):
-        prop = cls.getPointerProperty(obj, "GloveDraftAngle")
+        props = context.scene.dr_molds
+        prop = props.mold_draft_angle
         if not prop:
             prop = cls.duplicateToTempCollection(obj, cls.getColMoldTemp())
             cls.extrudeSweep(prop, (-100, 0, 0)) # use half-width of object instead
@@ -135,72 +136,71 @@ class DRMoldHelper():
             prop.name = obj.name + "-1a-DraftAngle"
             prop.data.name = prop.name
             prop.hide_set(True)
-            cls.setPointerProperty(obj, "GloveDraftAngle", prop)
+            props.mold_draft_angle = prop
         return prop
 
     @classmethod
     def getGloveSurface(cls, context, obj):
-        prop = cls.getPointerProperty(obj, "GloveMoldSurface")
+        props = context.scene.dr_molds
+        prop = props.mold_glove_surface
         if not prop:
-            props = context.scene.dr_molds
             prop = cls.inflatedCopy(cls.getDraftAngledModel(context, obj), props.glove_thickness, cls.getColMoldTemp())
             prop.name = obj.name + "-1b-MoldSurface"
             prop.data.name = prop.name
             prop.hide_set(True)
-            cls.setPointerProperty(obj, "GloveMoldSurface", prop)
+            props.mold_glove_surface = prop
         return prop
 
     @classmethod
     def getGloveInflated(cls, context, obj):
-        prop = cls.getPointerProperty(obj, "GloveMoldInflated")
+        props = context.scene.dr_molds
+        prop = props.mold_glove_inflated
         if not prop:
-            props = context.scene.dr_molds
             prop = cls.inflatedCopy(cls.getGloveSurface(context, obj), props.glove_rim_height, cls.getColMoldTemp())
             prop.name = obj.name + "-1c-MoldInflated"
             prop.data.name = prop.name
             prop.hide_set(True)
-            cls.setPointerProperty(obj, "GloveMoldInflated", prop)
+            props.mold_glove_inflated = prop
         return prop
 
     @classmethod
     def getGloveMoldComplete(cls, context, obj):
-        prop = cls.getPointerProperty(obj, "GloveMoldComplete")
+        props = context.scene.dr_molds
+        prop = props.mold_glove_complete
         if not prop:
-            props = context.scene.dr_molds
             prop = cls.duplicateToTempCollection(cls.getGloveSurface(context, obj), cls.getColMoldTemp())
             inflatedRim = cls.getGloveInflated(context, obj)
             
             ribShape = cls.makeMoldRib(props.glove_rim_width)
             
-            cls.booleanWith(ribShape, inflatedRim, 0)
-            cls.booleanWith(prop, ribShape, 1)
+            cls.intersectWith(ribShape, inflatedRim)
+            cls.unionWith(prop, ribShape)
             cls.deleteObject(ribShape)
-            cls.booleanWithCollection(prop, cls.getColGloveAdditions(), 1)
+            cls.unionWithCollection(prop, cls.getColGloveAdditions())
             prop.name = obj.name + "-1d-GloveMold"
             prop.data.name = prop.name
             prop.hide_set(True)
-            cls.setPointerProperty(obj, "GloveMoldComplete", prop)
+            props.mold_glove_complete = prop
         return prop
     
     @classmethod
     def getShellBase(cls, context, obj):
-        prop = cls.getPointerProperty(obj, "MoldShellBase")
+        props = context.scene.dr_molds
+        prop = props.mold_shell_base
         if not prop:
-            props = context.scene.dr_molds
             prop = cls.inflatedCopy(cls.getGloveInflated(context, obj), props.shell_thickness, cls.getColMoldTemp())
-            #cls.convexHull(prop)
             prop.name = obj.name + "-2a-MoldShellBase"
             prop.data.name = prop.name
             prop.hide_set(True)
 
-            cls.setPointerProperty(obj, "MoldShellBase", prop)
+            props.mold_shell_base = prop
         return prop
 
     @classmethod
     def getShellOrganic(cls, context, obj):
-        prop = cls.getPointerProperty(obj, "MoldShellOrganic")
+        props = context.scene.dr_molds
+        prop = props.mold_shell_organic
         if not prop:
-            props = context.scene.dr_molds
             prop = cls.duplicateToTempCollection(cls.getShellBase(context, obj), cls.getColMoldTemp())
             prop.name = obj.name + "-2b-MoldShellOrganic"
             prop.data.name = prop.name
@@ -213,22 +213,22 @@ class DRMoldHelper():
             obj2 = cls.inflatedCopy(prop, props.shell_rim_height, cls.getCollection("MoldTemp", delete_existing=False))
             
             obj3 = cls.makeCube(1000, 1000, props.shell_rim_width)
-            cls.booleanWith(obj3, obj2, 0)
+            cls.intersectWith(obj3, obj2)
             cls.makePrintable(obj3)
             cls.remeshDefault(obj3)
-            cls.booleanWith(prop, obj3, 1)
+            cls.unionWith(prop, obj3)
             cls.deleteObject(obj3)
 
             obj3 = cls.makeCube(props.shell_rim_width, 1000, 1000)
-            cls.booleanWith(obj3, obj2, 0)
-            cls.booleanWith(prop, obj3, 1)
+            cls.intersectWith(obj3, obj2)
+            cls.unionWith(prop, obj3)
             cls.deleteObject(obj3)
 
             cls.deleteObject(obj2)
 
-            cls.booleanWithCollection(prop, cls.getColShellAdditions(), 1)
+            cls.unionWithCollection(prop, cls.getColShellAdditions())
 
-            cls.setPointerProperty(obj, "MoldShellOrganic", prop)
+            props.mold_shell_organic = prop
         return prop
     
     @classmethod
@@ -239,20 +239,21 @@ class DRMoldHelper():
     
     @classmethod
     def getShellFinished(cls, context, obj):
-        prop = cls.getPointerProperty(obj, "MoldShellFinished")
+        props = context.scene.dr_molds
+        prop = props.mold_shell_finished
         if not prop:
             prop = cls.duplicateToTempCollection(cls.getShellOrganic(context, obj), cls.getColMoldTemp())
 
             obj2 = cls.getClipPlane(0)
-            cls.booleanWith(prop, obj2, 2)
+            cls.differenceWith(prop, obj2)
             cls.deleteObject(obj2)
 
             obj2 = cls.getGloveMoldComplete(context, obj)
-            cls.booleanWith(prop, obj2, 2)
+            cls.differenceWith(prop, obj2)
             prop.name = obj.name + "-2c-MoldShellFinished"
             prop.data.name = prop.name
             prop.hide_set(True)
-            cls.setPointerProperty(obj, "MoldShellFinished", prop)
+            props.mold_shell_finished = prop
         return prop
     
     @classmethod
@@ -262,6 +263,7 @@ class DRMoldHelper():
     
     @classmethod
     def getShellHalf(cls, context, obj, leftHalf):
+        props = context.scene.dr_molds
         halfName = "MoldShellRight"
         if leftHalf:
             halfName = "MoldShellLeft"
@@ -271,33 +273,38 @@ class DRMoldHelper():
             cube = cls.makeCube(5000, 5000, 5000)
             cube.location = (2500, 0, 2000)
             if leftHalf:
-                cube.location = (-250, 0, 200)
-            cls.booleanWith(prop, cube, 0)
+                cube.location = (-2500, 0, 2000)
+            cls.intersectWith(prop, cube)
             cls.deleteObject(cube)
             prop.name = obj.name + "-2d-" + halfName
             prop.data.name = prop.name
             prop.hide_set(False)
             cls.setPointerProperty(obj, halfName, prop)
+            num = 0
+            if(leftHalf):
+                num = 1
+            #props.mold_shell_half[num] = prop
         return prop
 
     @classmethod
     def getBaseShape(cls, context, obj):
-        prop = cls.getPointerProperty(obj, "MoldBaseShape")
+        props = context.scene.dr_molds
+        prop = props.mold_base_shape
         if not prop:
             prop = cls.duplicateToTempCollection(cls.getShellOrganic(context, obj), cls.getColMoldTemp())
 
             cls.extrudeIntersection(prop, 15)
             
-            cls.booleanWith(prop, obj, 1)
+            cls.unionWith(prop, obj)
 
             obj2 = cls.getClipPlane(10)
-            cls.booleanWith(prop, obj2, 2)
+            cls.differenceWith(prop, obj2)
             cls.deleteObject(obj2)
 
             prop.name = obj.name + "-3a-MoldBaseShape"
             prop.data.name = prop.name
             prop.hide_set(False)
-            cls.setPointerProperty(obj, "MoldBaseShape", prop)
+            props.mold_base_shape = prop
         return prop
 
     @classmethod
@@ -454,6 +461,18 @@ class DRMoldHelper():
     def remeshDefault(cls, obj):
         props = bpy.context.scene.dr_molds
         cls.remesh(obj, props.remesh_resolution)
+
+    @classmethod
+    def intersectWith(cls, obj, otherobj):
+        cls.booleanWith(obj, otherobj, 0)
+    
+    @classmethod
+    def unionWith(cls, obj, otherobj):
+        cls.booleanWith(obj, otherobj, 1)
+    
+    @classmethod
+    def differenceWith(cls, obj, otherobj):
+        cls.booleanWith(obj, otherobj, 2)
     
     @classmethod
     def booleanWith(cls, obj, otherobj, mode):
@@ -466,6 +485,18 @@ class DRMoldHelper():
         }
         mod.operation = switcher.get(mode, "UNION")
         cls.applyModifiers(obj)
+
+    @classmethod
+    def intersectWithCollection(cls, obj, collection):
+        cls.booleanWithCollection(obj, collection, 0)
+    
+    @classmethod
+    def unionWithCollection(cls, obj, collection):
+        cls.booleanWithCollection(obj, collection, 1)
+    
+    @classmethod
+    def differenceWithCollection(cls, obj, collection):
+        cls.booleanWithCollection(obj, collection, 2)
 
     @classmethod
     def booleanWithCollection(cls, obj, collection, mode):
@@ -523,7 +554,7 @@ class DRMoldHelper():
     def makeMoldRib(cls, thickness):
         obj = cls.makeCube(thickness, 5000, 5000)
         obj2 = cls.makeCube(5000, 5000, thickness)
-        cls.booleanWith(obj, obj2, 1)
+        cls.unionWith(obj, obj2)
         cls.deleteObject(obj2)
         return obj
 
