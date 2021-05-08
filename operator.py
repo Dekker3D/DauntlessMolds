@@ -130,7 +130,7 @@ class DRMoldHelper():
         if not prop:
             prop = cls.duplicateToTempCollection(obj, cls.getColMoldTemp())
             cls.extrudeSweep(prop, (-100, 0, 0)) # use half-width of object instead
-            cls.remesh(prop, 2)
+            cls.remeshDefault(prop)
             cls.symmetrize(prop)
             prop.name = obj.name + "-1a-DraftAngle"
             prop.data.name = prop.name
@@ -208,14 +208,14 @@ class DRMoldHelper():
 
             # overhang stuff
             cls.makePrintable(prop)
-            cls.remesh(prop, 2)
+            cls.remeshDefault(prop)
 
             obj2 = cls.inflatedCopy(prop, props.shell_rim_height, cls.getCollection("MoldTemp", delete_existing=False))
             
             obj3 = cls.makeCube(1000, 1000, props.shell_rim_width)
             cls.booleanWith(obj3, obj2, 0)
             cls.makePrintable(obj3)
-            cls.remesh(obj3, 2)
+            cls.remeshDefault(obj3)
             cls.booleanWith(prop, obj3, 1)
             cls.deleteObject(obj3)
 
@@ -451,6 +451,11 @@ class DRMoldHelper():
         cls.applyModifiers(obj)
     
     @classmethod
+    def remeshDefault(cls, obj):
+        props = bpy.context.scene.dr_molds
+        cls.remesh(obj, props.remesh_resolution)
+    
+    @classmethod
     def booleanWith(cls, obj, otherobj, mode):
         mod = obj.modifiers.new("Boolean", "BOOLEAN")
         mod.object = otherobj
@@ -543,7 +548,7 @@ class DRMoldHelper():
     def inflatedCopy(cls, object, radius, col):
         rmc = cls.duplicateToTempCollection(object, col)
         cls.inflateObject(rmc, radius)
-        cls.remesh(rmc, 2)
+        cls.remeshDefault(rmc)
         return rmc
     
     @classmethod
