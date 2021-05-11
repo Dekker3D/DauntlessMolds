@@ -15,8 +15,8 @@ bl_info = {
     "name" : "Dauntless Molds",
     "author" : "Martijn Dekker",
     "description" : "",
-    "blender" : (2, 80, 0),
-    "version" : (0, 0, 1),
+    "blender" : (2, 92, 0),
+    "version" : (0, 1, 1),
     "location" : "",
     "warning" : "",
     "category" : "Mesh"

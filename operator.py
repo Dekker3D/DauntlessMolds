@@ -233,14 +233,18 @@ class DRMoldHelper():
             overhangDir = (0, 0, -1)
             if(props.sides_upside_down):
                 overhangDir = (0, 0, 1)
-            cls.makePrintable(prop, dir=overhangDir)
+            cls.makePrintable(prop, dir=overhangDir, angle=45)
             cls.remeshDefault(prop)
 
             obj2 = cls.inflatedCopy(prop, props.shell_rim_height, cls.getCollection("MoldTemp", delete_existing=False))
             
             obj3 = cls.makeCube(1000, 1000, props.shell_rim_width)
             cls.intersectWith(obj3, obj2)
-            cls.makePrintable(obj3, dir=(0, 0, 1))
+
+            baseAngle = 45
+            if(not props.sides_upside_down):
+                baseAngle = 90 - 22.5
+            cls.makePrintable(obj3, dir=(0, 0, 1), angle=baseAngle)
             cls.remeshDefault(obj3)
             cls.unionWith(prop, obj3)
             cls.deleteObject(obj3)
@@ -391,12 +395,12 @@ class DRMoldHelper():
         bm.to_mesh(mesh)
     
     @classmethod
-    def makePrintable(cls, obj, dir = (0, 0, 1)):
+    def makePrintable(cls, obj, dir = (0, 0, 1), angle = 45):
         mesh = obj.data
         bm = bmesh.new()
         bm.from_mesh(mesh)
         dir = mathutils.Vector(dir)
-        dot = 0.707
+        dot = math.sin(math.radians(angle)) # higher angle = harsher overhangs
         dirNorm = dir.normalized()
         extrudeFaces = []
         for face in bm.faces:
@@ -409,6 +413,8 @@ class DRMoldHelper():
         # Move extruded geometry
         translate_verts = [v for v in extruded['geom'] if isinstance(v, BMVert)]
 
+        distMult = 1 / math.tan(math.radians(angle))
+
         for vert in translate_verts:
             modvec = mathutils.Vector(vert.co)
             vHeight = modvec.dot(dir)
@@ -417,7 +423,7 @@ class DRMoldHelper():
             
             vec = mathutils.Vector(vert.co)
 
-            vec = mathutils.Vector(dir) * (vHeight + dist)
+            vec = mathutils.Vector(dir) * (vHeight + dist * distMult)
             #vec[2] += dist
             #vec[0] = 0
             #vec[1] = 0
