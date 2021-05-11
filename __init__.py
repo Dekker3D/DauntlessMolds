@@ -67,6 +67,12 @@ class DMSceneProps(PropertyGroup):
         default=True
     )
     
+    sides_upside_down: BoolProperty(
+        name="Print Sides Upside-Down",
+        description="Assume that side parts of the mold will be printed upside-down. This mainly affects overhang compensation.",
+        default=True
+    )
+    
     remesh_resolution: FloatProperty(
         name="Remesh Resolution",
         description="The resolution of the remesh operations",
@@ -118,6 +124,11 @@ class DMSceneProps(PropertyGroup):
         default=10 # 10mm
     )
 
+    mold_parent: PointerProperty(
+        name="Parent Mesh",
+        description="Mesh that this mesh was based on",
+        type=bpy.types.Object
+    )
     mold_draft_angle: PointerProperty(
         name="Draft Angle Mesh",
         description="Mesh with any gaps filled in",
@@ -178,10 +189,10 @@ def register():
     for _class in _classes:
         register_class(_class)
     
-    bpy.types.Scene.dr_molds = PointerProperty(type=DMSceneProps)
+    bpy.types.Object.dr_molds = PointerProperty(type=DMSceneProps)
 
 def unregister():
-    del bpy.types.Scene.dr_molds
+    del bpy.types.Object.dr_molds
     
     for _class in _classes:
         unregister_class(_class)

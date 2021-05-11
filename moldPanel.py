@@ -1,5 +1,5 @@
 import bpy
-
+from . operator import DRMoldHelper
 
 class DRPanel(bpy.types.Panel):
     bl_category = "Dauntless Molds"
@@ -18,12 +18,16 @@ class DRMoldPanel(DRPanel):
     def draw(self, context):
         layout = self.layout
 
-        props = context.scene.dr_molds
+        obj = DRMoldHelper.getParentModel(context.active_object)
+        if(not obj):
+            return
+        props = obj.dr_molds
 
         box = layout.box()
         box.label(text="Settings")
         box.operator("drmold.set_units", text="Set Units To MM Scale")
         box.prop(props, "remesh_resolution")
+        box.prop(props, "sides_upside_down")
         #box.prop(props, "symmetry_mode")
         box.prop(props, "glove_thickness")
         box.prop(props, "glove_rim_height")

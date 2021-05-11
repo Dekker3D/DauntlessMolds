@@ -126,7 +126,10 @@ class DRMoldHelper():
 
     @classmethod
     def getDraftAngledModel(cls, context, obj):
-        props = context.scene.dr_molds
+        parent = cls.getParentModel(obj)
+        if not parent:
+            return
+        props = parent.dr_molds
         prop = props.mold_draft_angle
         if not prop:
             prop = cls.duplicateToTempCollection(obj, cls.getColMoldTemp())
@@ -137,11 +140,15 @@ class DRMoldHelper():
             prop.data.name = prop.name
             prop.hide_set(True)
             props.mold_draft_angle = prop
+            prop.dr_molds.mold_parent = parent
         return prop
 
     @classmethod
     def getGloveSurface(cls, context, obj):
-        props = context.scene.dr_molds
+        parent = cls.getParentModel(obj)
+        if not parent:
+            return
+        props = parent.dr_molds
         prop = props.mold_glove_surface
         if not prop:
             prop = cls.inflatedCopy(cls.getDraftAngledModel(context, obj), props.glove_thickness, cls.getColMoldTemp())
@@ -149,11 +156,15 @@ class DRMoldHelper():
             prop.data.name = prop.name
             prop.hide_set(True)
             props.mold_glove_surface = prop
+            prop.dr_molds.mold_parent = parent
         return prop
 
     @classmethod
     def getGloveInflated(cls, context, obj):
-        props = context.scene.dr_molds
+        parent = cls.getParentModel(obj)
+        if not parent:
+            return
+        props = parent.dr_molds
         prop = props.mold_glove_inflated
         if not prop:
             prop = cls.inflatedCopy(cls.getGloveSurface(context, obj), props.glove_rim_height, cls.getColMoldTemp())
@@ -161,11 +172,15 @@ class DRMoldHelper():
             prop.data.name = prop.name
             prop.hide_set(True)
             props.mold_glove_inflated = prop
+            prop.dr_molds.mold_parent = parent
         return prop
 
     @classmethod
     def getGloveMoldComplete(cls, context, obj):
-        props = context.scene.dr_molds
+        parent = cls.getParentModel(obj)
+        if not parent:
+            return
+        props = parent.dr_molds
         prop = props.mold_glove_complete
         if not prop:
             prop = cls.duplicateToTempCollection(cls.getGloveSurface(context, obj), cls.getColMoldTemp())
@@ -181,11 +196,15 @@ class DRMoldHelper():
             prop.data.name = prop.name
             prop.hide_set(True)
             props.mold_glove_complete = prop
+            prop.dr_molds.mold_parent = parent
         return prop
     
     @classmethod
     def getShellBase(cls, context, obj):
-        props = context.scene.dr_molds
+        parent = cls.getParentModel(obj)
+        if not parent:
+            return
+        props = parent.dr_molds
         prop = props.mold_shell_base
         if not prop:
             prop = cls.inflatedCopy(cls.getGloveInflated(context, obj), props.shell_thickness, cls.getColMoldTemp())
@@ -194,11 +213,15 @@ class DRMoldHelper():
             prop.hide_set(True)
 
             props.mold_shell_base = prop
+            prop.dr_molds.mold_parent = parent
         return prop
 
     @classmethod
     def getShellOrganic(cls, context, obj):
-        props = context.scene.dr_molds
+        parent = cls.getParentModel(obj)
+        if not parent:
+            return
+        props = parent.dr_molds
         prop = props.mold_shell_organic
         if not prop:
             prop = cls.duplicateToTempCollection(cls.getShellBase(context, obj), cls.getColMoldTemp())
@@ -207,14 +230,17 @@ class DRMoldHelper():
             prop.hide_set(True)
 
             # overhang stuff
-            cls.makePrintable(prop)
+            overhangDir = (0, 0, -1)
+            if(props.sides_upside_down):
+                overhangDir = (0, 0, 1)
+            cls.makePrintable(prop, dir=overhangDir)
             cls.remeshDefault(prop)
 
             obj2 = cls.inflatedCopy(prop, props.shell_rim_height, cls.getCollection("MoldTemp", delete_existing=False))
             
             obj3 = cls.makeCube(1000, 1000, props.shell_rim_width)
             cls.intersectWith(obj3, obj2)
-            cls.makePrintable(obj3)
+            cls.makePrintable(obj3, dir=(0, 0, 1))
             cls.remeshDefault(obj3)
             cls.unionWith(prop, obj3)
             cls.deleteObject(obj3)
@@ -229,6 +255,7 @@ class DRMoldHelper():
             cls.unionWithCollection(prop, cls.getColShellAdditions())
 
             props.mold_shell_organic = prop
+            prop.dr_molds.mold_parent = parent
         return prop
     
     @classmethod
@@ -239,7 +266,10 @@ class DRMoldHelper():
     
     @classmethod
     def getShellFinished(cls, context, obj):
-        props = context.scene.dr_molds
+        parent = cls.getParentModel(obj)
+        if not parent:
+            return
+        props = parent.dr_molds
         prop = props.mold_shell_finished
         if not prop:
             prop = cls.duplicateToTempCollection(cls.getShellOrganic(context, obj), cls.getColMoldTemp())
@@ -254,6 +284,7 @@ class DRMoldHelper():
             prop.data.name = prop.name
             prop.hide_set(True)
             props.mold_shell_finished = prop
+            prop.dr_molds.mold_parent = parent
         return prop
     
     @classmethod
@@ -263,7 +294,10 @@ class DRMoldHelper():
     
     @classmethod
     def getShellHalf(cls, context, obj, leftHalf):
-        props = context.scene.dr_molds
+        parent = cls.getParentModel(obj)
+        if not parent:
+            return
+        props = parent.dr_molds
         halfName = "MoldShellRight"
         if leftHalf:
             halfName = "MoldShellLeft"
@@ -284,11 +318,15 @@ class DRMoldHelper():
             if(leftHalf):
                 num = 1
             #props.mold_shell_half[num] = prop
+            prop.dr_molds.mold_parent = parent
         return prop
 
     @classmethod
     def getBaseShape(cls, context, obj):
-        props = context.scene.dr_molds
+        parent = cls.getParentModel(obj)
+        if not parent:
+            return
+        props = parent.dr_molds
         prop = props.mold_base_shape
         if not prop:
             prop = cls.duplicateToTempCollection(cls.getShellOrganic(context, obj), cls.getColMoldTemp())
@@ -305,6 +343,7 @@ class DRMoldHelper():
             prop.data.name = prop.name
             prop.hide_set(False)
             props.mold_base_shape = prop
+            prop.dr_molds.mold_parent = parent
         return prop
 
     @classmethod
@@ -322,6 +361,15 @@ class DRMoldHelper():
     @classmethod
     def getColShellAdditions(cls, delete_existing=False):
         return cls.getCollection("ShellAdditions", delete_existing=delete_existing)
+
+    @classmethod
+    def getParentModel(cls, obj):
+        i = 0
+        if obj:
+            while(obj.dr_molds.mold_parent and i < 10):
+                obj = obj.dr_molds.mold_parent
+                i += 1 # avoid infinite loops
+        return obj
 
     @classmethod
     def extrudeIntersection(cls, obj, height):
@@ -343,11 +391,11 @@ class DRMoldHelper():
         bm.to_mesh(mesh)
     
     @classmethod
-    def makePrintable(cls, obj):
+    def makePrintable(cls, obj, dir = (0, 0, 1)):
         mesh = obj.data
         bm = bmesh.new()
         bm.from_mesh(mesh)
-        dir = mathutils.Vector((0, 0, 1))
+        dir = mathutils.Vector(dir)
         dot = 0.707
         dirNorm = dir.normalized()
         extrudeFaces = []
@@ -363,13 +411,16 @@ class DRMoldHelper():
 
         for vert in translate_verts:
             modvec = mathutils.Vector(vert.co)
-            modvec[2] = 0
-            dist = modvec.length
-
+            vHeight = modvec.dot(dir)
+            modvec -= dir * vHeight
+            dist = modvec.length # distance to the side
+            
             vec = mathutils.Vector(vert.co)
-            vec[2] += dist
-            vec[0] = 0
-            vec[1] = 0
+
+            vec = mathutils.Vector(dir) * (vHeight + dist)
+            #vec[2] += dist
+            #vec[0] = 0
+            #vec[1] = 0
             vert.co = vec
 
         
@@ -459,7 +510,10 @@ class DRMoldHelper():
     
     @classmethod
     def remeshDefault(cls, obj):
-        props = bpy.context.scene.dr_molds
+        parent = cls.getParentModel(obj)
+        if not parent:
+            return
+        props = parent.dr_molds
         cls.remesh(obj, props.remesh_resolution)
 
     @classmethod
