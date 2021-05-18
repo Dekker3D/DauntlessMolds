@@ -16,7 +16,7 @@ bl_info = {
     "author" : "Martijn Dekker",
     "description" : "",
     "blender" : (2, 92, 0),
-    "version" : (0, 1, 1),
+    "version" : (0, 1, 2),
     "location" : "",
     "warning" : "",
     "category" : "Mesh"
