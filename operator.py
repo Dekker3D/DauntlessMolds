@@ -133,6 +133,9 @@ class DRMoldHelper():
         prop = props.mold_draft_angle
         if not prop:
             prop = cls.duplicateToTempCollection(obj, cls.getColMoldTemp())
+            cls.selectObject(prop)
+            bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
+            cls.selectObject(obj)
             cls.extrudeSweep(prop, (-100, 0, 0)) # use half-width of object instead
             cls.remeshDefault(prop)
             cls.symmetrize(prop)
@@ -395,13 +398,23 @@ class DRMoldHelper():
         bm.to_mesh(mesh)
     
     @classmethod
-    def makePrintable(cls, obj, dir = (0, 0, 1), angle = 45):
+    def makePrintable(cls, obj, dir = (0, 0, 1), angle = 45, cap=False, capExtraHeight=20):
         mesh = obj.data
         bm = bmesh.new()
         bm.from_mesh(mesh)
         dir = mathutils.Vector(dir)
         dot = math.sin(math.radians(angle)) # higher angle = harsher overhangs
         dirNorm = dir.normalized()
+
+        capHeight = 0
+        if (cap):
+            for vert in bm.verts:
+                h = dirNorm.dot(vert.co)
+                if (h > capHeight):
+                    capHeight = h
+
+        capHeight += capExtraHeight
+
         extrudeFaces = []
         for face in bm.faces:
             if(face.normal.dot(dirNorm) > dot):
@@ -419,17 +432,18 @@ class DRMoldHelper():
             modvec = mathutils.Vector(vert.co)
             vHeight = modvec.dot(dir)
             modvec -= dir * vHeight
-            dist = modvec.length # distance to the side
+            dist = modvec.length * distMult #distance to move
             
-            vec = mathutils.Vector(vert.co)
+            newVec = mathutils.Vector(dir) * (vHeight + dist)
 
-            vec = mathutils.Vector(dir) * (vHeight + dist * distMult)
-            #vec[2] += dist
-            #vec[0] = 0
-            #vec[1] = 0
-            vert.co = vec
-
-        
+            if (cap):
+                if (vHeight + dist > capHeight):
+                    # dist is distance to move
+                    # vHeight is current height
+                    f = (capHeight - vHeight) / dist
+                    vert.co = vert.co + (newVec - vert.co) * f
+            else:
+                vert.co = newVec
 
         bmesh.ops.delete(bm, geom=extrudeFaces, context="FACES")
 
