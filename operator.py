@@ -26,6 +26,7 @@ class DRMoldCleanupOperator(bpy.types.Operator):
     bl_description = "DRMold: Cleanup"
 
     def execute(self, context):
+        bpy.ops.ed.undo_push()
         collection = DRMoldHelper.cleanUp(context, bpy.context.active_object)
 
         return {'FINISHED'}
@@ -38,6 +39,7 @@ class DRMoldOperator(bpy.types.Operator):
     collection = None
 
     def execute(self, context):
+        bpy.ops.ed.undo_push()
         self.shape = bpy.context.active_object
 
         DRMoldHelper.makeShellHalves(context, self.shape)
@@ -122,6 +124,20 @@ class DRAddFunnelOperator(bpy.types.Operator):
 class DRMoldHelper():
     @classmethod
     def cleanUp(cls, context, obj):
+        parent = cls.getParentModel(obj)
+        if parent:
+            parent.dr_molds.mold_parent = None
+            parent.dr_molds.mold_draft_angle = None
+            parent.dr_molds.mold_glove_surface = None
+            parent.dr_molds.mold_glove_inflated = None
+            parent.dr_molds.mold_glove_complete = None
+            parent.dr_molds.mold_shell_base = None
+            parent.dr_molds.mold_shell_organic = None
+            parent.dr_molds.mold_shell_finished = None
+            parent.dr_molds.mold_shell_cut = None
+            #parent.dr_molds.mold_shell_half = None
+            parent.dr_molds.mold_base_shape = None
+        
         collection = cls.getColMoldTemp(delete_existing=True)
 
     @classmethod
@@ -292,6 +308,7 @@ class DRMoldHelper():
             prop.hide_set(True)
             props.mold_shell_finished = prop
             prop.dr_molds.mold_parent = parent
+            cls.differenceWithCollection(prop, cls.getColCutouts())
         return prop
     
     @classmethod
@@ -351,6 +368,7 @@ class DRMoldHelper():
             prop.hide_set(False)
             props.mold_base_shape = prop
             prop.dr_molds.mold_parent = parent
+            cls.differenceWithCollection(prop, cls.getColCutouts())
         return prop
 
     @classmethod
@@ -643,7 +661,7 @@ class DRMoldHelper():
     @classmethod
     def makeCube(cls, x, y, z):
         sel = bpy.context.active_object
-        bpy.ops.mesh.primitive_cube_add(location=(0,0,0), size=1, scale=(x*2, y*2, z*2))
+        bpy.ops.mesh.primitive_cube_add(location=(0,0,0), size=1, scale=(x, y, z))
         bpy.ops.object.transform_apply(location = False, scale = True, rotation = False)
         cube = bpy.context.active_object
         cls.selectObject(sel)

@@ -15,12 +15,13 @@ bl_info = {
     "name" : "Dauntless Molds",
     "author" : "Martijn Dekker",
     "description" : "",
-    "blender" : (2, 92, 0),
+    "blender" : (3, 1, 0),
     "version" : (0, 1, 2),
     "location" : "",
     "warning" : "",
     "category" : "Mesh"
 }
+bl_options = {"UNDO"}
 
 from . operator import DRMoldUnitOperator
 from . operator import DRMoldCleanupOperator
